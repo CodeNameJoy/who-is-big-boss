@@ -158,13 +158,16 @@
         }
 
         .role-image-container {
-            width: 200px;
-            height: 200px;
+            width: min(200px, 80%);
+            height: min(200px, 80%);
             margin: 20px auto;
             border-radius: 0px;
             overflow: hidden;
             border: 3px solid rgba(61, 179, 122, 0.5);
             background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .role-image {
@@ -488,3 +491,4 @@
 </body>
 
 </html>
+
