@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>金属齿轮转转乐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'monospace', HP Simplified Hans, sans-serif;
+            background: url('images/background.png') no-repeat center center;
+            background-size: cover;
+            background-attachment: fixed;
+            color: rgb(61, 179, 122);
+            padding: 0px min(160px, 15%) 0px min(160px, 15%);
+            overflow-y: auto;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: min(30px, 5%);
+            background: rgba(15, 15, 15, 100);
+            border-radius: 0px;
+            min-height: 100vh; 
+            height: auto;
+            overflow-y: auto;   
+        }
+        
+        .question-box {
+            background: rgba(255, 255, 255, 0);
+            border-radius: 0px;
+            padding: min(25px, 4%);
+            padding-bottom: 30px;
+            margin-bottom: 15px;
+            border: 4px solid rgba(61, 179, 122, 0.826);
+            display: block;
+            overflow: visible;
+            min-height: auto;
+        }
+        
+        .question-title {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            color: rgb(61, 179, 122);
+        }
+
+        .question-number {
+            font-size: 1.1em;
+            margin-right: 4px;
+        }
+        
+        .options {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .option {
+            background: rgba(255, 255, 255, 0);
+            border: 2px solid rgba(61, 179, 122, 0.826);
+            border-radius: 0px;
+            padding: min(15px, 4%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+        }
+        
+        .option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgb(54, 227, 129);
+            color:#06d6a0;
+            transform: translateY(-2px);
+        }
+        
+        .option.selected {
+            background: rgba(102, 255, 140, 0.2);
+            border-color: rgb(54, 227, 129);
+            color:#06d6a0;
+            box-shadow: 0 5px 15px rgba(255, 209, 102, 0.2);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0);
+            color: rgb(61, 179, 122);
+        }
+        
+        .btn:hover {
+            transform: translateY(0px);
+        }
+        
+        .btn:disabled {
+            background: rgba(255, 255, 255, 0);
+            color:rgba(61, 179, 122, 0.237);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.0);
+            border-radius: 0px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(45deg,rgba(61, 179, 122, 0.038), rgb(61, 179, 122));
+            border-radius: 0px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .result-container {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.8s ease;
+        }
+        
+        .result-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 0px;
+            padding: 40px;
+            margin: 30px 0;
+        }
+        
+        .role-title {
+            font-size: 2em;
+            color: #06d6a0;
+            margin: 20px 0;
+        }
+        
+        .role-description {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #d3d9b7;
+            margin-bottom: 20px;
+        }
+
+        .role-image-container {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border-radius: 0px;
+            overflow: hidden;
+            border: 3px solid rgba(61, 179, 122, 0.5);
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .role-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .role-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .restart-btn {
+            background: rgba(255, 255, 255, 0);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- 问题容器 -->
+        <div id="questionContainer" class="question-container active">
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            
+            <div class="question-box">
+                <div class="question-title">
+                    <span class="question-number" id="currentQuestion">1</span>
+                    <span id="questionText"></span>
+                </div>
+                <div class="options" id="optionsContainer"></div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="btn" id="prevBtn" onclick="prevQuestion()" disabled>返回</button>
+                <button class="btn" id="nextBtn" onclick="nextQuestion()">继续</button>
+            </div>
+        </div>
+        
+        <!-- 结果容器 -->
+        <div id="resultContainer" class="result-container">
+            <div class="result-card">
+                <h2>鉴定为</h2>
+                <div class="role-image-container">
+                    <img id="resultImage" class="role-image" src="" alt="角色图片"></div>
+                <div id="resultRole" class="role-title"></div>
+                <div id="resultDescription" class="role-description"></div>
+                <div id="scoreDisplay" class="score-display"></div>
+                <button class="btn restart-btn" onclick="restartTest()">重新测试</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= 配置数据 =================
+        // 角色定义（按顺位排序，顺位数字越小优先级越高）
+        const roles = [
+            { id: 1, name: "固蛇", description: "你没法用无所谓去对抗无所谓的人生，因为很显然，你对一切都有所谓，很少人知道这点，连你自己也常常忽略。以及别忘了，哪怕你把自己深埋于阿拉斯加的雪地下，狗狗们也总会找到你。", image: "images/solid_snake.jpg" },
+            { id: 2, name: "和平·米勒", description: "我不知道你参加什么了运动，只知道你很想赢，游戏人间只是你的伪装，总有一天你无处遁藏", image: "images/kazuhira_miller.jpg" },
+            { id: 3, name: "伊娃", description: "极驰于枪林弹雨中的一抹魅影，你深知如何在人之相与间来去自如，直到早已崩塌的信任被重新构筑", image: "images/eva.jpg" },
+            { id: 4, name: "内奥米·亨特", description: "你总关注起源，我想这并不意味着你拘泥过去，而更意味着你愿了解如何改造将来", image: "images/naomi_hunter.jpg" },
+            { id: 5, name: "奇爱博士", description: "理智与狂热共同淬炼出的精钢之心，蕴藏的能量何其强烈，以至无人能够预判你的终结", image: "images/dr_strangelove.jpg" },
+            { id: 6, name: "裸蛇", description: "成长于战火中的野物，游荡在天地间的孤儿，世界能对你苛求些什么呢？", image: "images/naked_snake.jpg" },
+            { id: 7, name: "雷电", description: "如果你的职业生涯像一个笑话，别灰心，坚持到底你就能成为一个屁股比较翘的笑话。除大脑和一部分脊柱之外的所有零件全都是公司的私有资产，你不会以为是游戏里才有的设定吧?", image: "images/raiden.jpg" },
+            { id: 8, name: "哈尔·艾默里克", description: "你的精神力量比所有人想象的都要强大，你只是……天生不擅长伤害他人罢了", image: "images/hal_emmerich.jpg" },
+            { id: 9, name: "液蛇", description: "除同类与血亲外，任何人的喜怒哀乐都与你无关，你坚信你是太阳，永远热烈，不顾死活", image: "images/liquid_snake.jpg" },
+            { id: 10, name: "灰狐", description: "你的人生有意义吗？你不知道，你只得抓住一切可被赋予意义的事，然后发现自己是个完美到可怕的执行者", image: "images/gray_fox.jpg" },
+            { id: 11, name: "毒蛇", description: "你的存在本身就极迷人，哪怕被迷住的人们并不清楚你的名字，也不清楚你会引领他们去往何方", image: "images/venom_snake.jpg" },
+            { id: 12, name: "山猫", description: "你像演奏小提琴一样演奏了所有人，你开心吗？落幕前没人能够听见你的声音，而落幕后，这里再也没有听众", image: "images/ocelot.jpg" }
+        ];
+
+        // 问题配置（每道题6个选项，每个选项对应2个角色）
+        const questions = [
+            {
+                text: "你是个新兵蛋子，因为养死了好几打野槌蛇而被罚打扫半年厕所，你发现你可以在干这种不用动脑子的活时听听音乐，而你的iDroid曲库里不知为何只有摇滚，现在你走进厕所了，你会选择播放：",
+                options: [
+                    { text: "A. 风格简约，让人听了容易发呆或闭眼的摇滚", roles: [6, 11] },
+                    { text: "B. 音色迷幻，有旷远感的摇滚", roles: [3, 12] }, 
+                    { text: "C. 硬朗兼古典，狂躁而不失章法的摇滚", roles: [2, 9] }, 
+                    { text: "D. 前卫、实验性强，难欣赏的摇滚", roles: [5, 10] },  
+                    { text: "E. 经常被嘲伪摇但就是不讲道理地好听的摇滚", roles: [1, 8] },  
+                    { text: "F. 我宁可不播放", roles: [4, 7] } 
+                ]
+            },
+            {
+                text: "你发现厕所的异味很影响你的发挥，你打算自费搞点香薰以改善工作环境，你会选择：",
+                options: [
+                    { text: "A. 充满高大乔木气息的香薰", roles: [2, 11] },
+                    { text: "B. 充满柑橘&柠檬的清甜味的香薰", roles: [3, 8] }, 
+                    { text: "C. 充满大海的咸涩感的香薰", roles: [5, 9] }, 
+                    { text: "D. 充满陈旧纸墨味的香薰", roles: [6, 7] },  
+                    { text: "E. 充满冰爽与刺激感的香薰", roles: [4, 10] },  
+                    { text: "F. 坚持不采用香薰，保留纯正的消毒水味", roles: [1, 12] } 
+                ]
+            },
+            {
+                text: "现在有了香薰，你觉得再摆一些盆栽会让空气显得更清新些，你最先想到要摆的是：",
+                options: [
+                    { text: "A. 虎皮兰", roles: [7, 8] },
+                    { text: "B. 常春藤", roles: [2, 10] },
+                    { text: "C. 芦荟", roles: [1, 6] },
+                    { text: "D. 薄荷", roles: [3, 11] },
+                    { text: "E. 艾蒿", roles: [4, 12] },
+                    { text: "F. 龟背竹", roles: [5, 9] }
+                ]
+            },
+            {
+                text: "你突然觉得好的厕所还要配好的马桶垫，市面上有很多花色可供挑选，可能是为了讨好自己，也可能是为了讨好客人，或二者兼而有之，你选择了：",
+                options: [
+                    { text: "A. 蓝色为底，星星和远航的船为印花", roles: [4, 8] },
+                    { text: "B. 暖色调配棕色小熊印花", roles: [3, 11] },
+                    { text: "C. 绿白相间的做旧植物印花", roles: [5, 10] },
+                    { text: "D. 红、黄、蓝、黑、白组成的高对比度抽象色块", roles: [9, 12] },
+                    { text: "E. 和迷彩纸箱差不多的纹样，且一套包含多款印花", roles: [2, 6] },
+                    { text: "F. 极简纯灰但点缀一小朵白色的云", roles: [1, 7] }
+                ]
+            },
+            {
+                text: "你的地盘（指厕所）有很多油光锃亮的小精灵，为了不让它们到处乱跑、吓人，你决定给它们搭建一个小窝，你选择的房型是：",
+                options: [
+                    { text: "A. 蚁巢般原始而粗犷的艺术品", roles: [4, 9] },
+                    { text: "B. 湖景别墅（含人工湖）", roles: [7, 12] },
+                    { text: "C. 兼具圆润感与收纳功能的胶囊", roles: [5, 8] },
+                    { text: "D. 微缩版母基地/Big Shell", roles: [6, 11] },
+                    { text: "E. 经典挪威木头", roles: [1, 10] },
+                    { text: "F. 老广/港式灯牌街", roles: [2, 3] }
+                ]
+            },
+            {
+                text: "你发现厕所的空间还有很大冗余，够开一家蜜雪冰城，某天当你还在营业，来了一位兄弟/姐妹，躲在隔间爆小珍珠，你想安慰他/她，并顺手提供一杯：",
+                options: [
+                    { text: "A. 热可可", roles: [1, 11] },
+                    { text: "B. 白兰地", roles: [6, 9] },
+                    { text: "C. 龙舌兰日落", roles: [2, 12] },
+                    { text: "D. 薰衣草洋甘菊茶", roles: [3, 10] },
+                    { text: "E. 波子汽水", roles: [4, 8] },
+                    { text: "F. 雪王大圣代", roles: [5, 7] }
+                ]
+            },
+            {
+                text: "有一个大便超人拉完屎老不冲水，严重的时候还会崩到坑子外面，说一次好两天，绝对是故意的，你已经忍了这个人很久了，今天这个人又来了，你会：",
+                options: [
+                    { text: "A. 等对方出来，确认对方这次也没冲水后CQC之，打服了再讲道理", roles: [6, 11] },
+                    { text: "B. 直接动手，打出翔来，不讲道理", roles: [9, 10] },
+                    { text: "C. 等对方进了包厢拉到一半再破门而入，亲自监督", roles: [1, 7] },
+                    { text: "D. 等对方进了包厢，锁门，往里面扔串鞭炮", roles: [5, 8] },
+                    { text: "E. 小心翼翼地将对方的圣遗物收集起来，轻轻地放到对方枕头底下", roles: [2, 3] },
+                    { text: "F. 等对方开门，将其敲晕并往对方手里塞上一根沾了某种物质的勺，然后拍照留念/通报批评", roles: [4, 12] }
+                ]
+            },
+            {
+                text: "愉快的时光总是非常短暂，转眼间半年已过，现在你不用再掌管厕所，你已从一个新兵蛋子蜕变为一名成熟士兵，你的上司让你换一个更正式的动物代号，你会选择：",
+                options: [
+                    { text: "A. Seahorse", roles: [4, 11] },
+                    { text: "B. Dart Frog", roles: [7, 8] },
+                    { text: "C. Tiger Shark", roles: [1, 10] },
+                    { text: "D. Amur Tiger", roles: [6, 12] },
+                    { text: "E. Killer Whale", roles: [5, 9] },
+                    { text: "F. Raven", roles: [2, 3] }
+                ]
+            }
+        ];
+
+        // ================= 全局变量 =================
+        let currentQuestion = 0;
+        let scores = new Array(roles.length + 1).fill(0); // 索引从1开始，对应角色ID
+        let selectedOptions = new Array(questions.length).fill(null);
+
+        // ================= 初始化 =================
+        function initTest() {
+            showQuestion(currentQuestion);
+            updateProgress();
+        }
+
+        // ================= 显示问题 =================
+        function showQuestion(index) {
+            const question = questions[index];
+            document.getElementById('questionText').textContent = question.text;
+            document.getElementById('currentQuestion').textContent = index + 1;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, optionIndex) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                if (selectedOptions[index] === optionIndex) {
+                    optionDiv.classList.add('selected');
+                }
+                
+                optionDiv.innerHTML = `
+                    <div>${option.text}</div>
+                `;
+                
+                optionDiv.onclick = () => selectOption(index, optionIndex);
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            // 更新按钮状态
+            updateButtons();
+        }
+
+        // ================= 选择选项 =================
+        function selectOption(questionIndex, optionIndex) {
+            // 如果之前已经选过，先清除之前的计分
+            if (selectedOptions[questionIndex] !== null) {
+                const previousOption = questions[questionIndex].options[selectedOptions[questionIndex]];
+                previousOption.roles.forEach(roleId => {
+                    scores[roleId]--;
+                });
+            }
+            
+            // 设置新选择并计分
+            selectedOptions[questionIndex] = optionIndex;
+            const selectedOption = questions[questionIndex].options[optionIndex];
+            selectedOption.roles.forEach(roleId => {
+                scores[roleId]++;
+            });
+            
+            // 重新显示当前问题以更新选择状态
+            showQuestion(currentQuestion);
+        }
+
+        // ================= 导航功能 =================
+        function nextQuestion() {
+            //if (selectedOptions[currentQuestion] === null) {
+            //    alert('请先选择当前问题的答案！');
+            //    return;
+            //}
+            
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+                updateProgress();
+                updateButtonState();
+            } else {
+                calculateResult();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+                updateProgress();
+                updateButtonState();
+            }
+        }
+
+        function updateButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const currentQuestionState = selectedOptions[currentQuestion] !== null;
+            
+            prevBtn.disabled = currentQuestion === 0;
+            
+            if (currentQuestion === questions.length - 1) {
+                nextBtn.textContent = '查看结果';
+                nextBtn.disabled = !currentQuestionState;
+            } else {
+                nextBtn.textContent = '继续';
+                nextBtn.disabled = !currentQuestionState;
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // ================= 计算结果 =================
+        function calculateResult() {
+            // 找出最高分
+            let maxScore = 0;
+            let winningRoleId = null;
+            
+            // 按顺位顺序检查（顺位数字小的优先级高）
+            for (let roleId = 1; roleId <= roles.length; roleId++) {
+                if (scores[roleId] > maxScore) {
+                    maxScore = scores[roleId];
+                    winningRoleId = roleId;
+                }
+            }
+            
+            // 显示结果
+            const resultRole = roles[winningRoleId - 1];
+            document.getElementById('resultRole').textContent = resultRole.name;
+            document.getElementById('resultDescription').textContent = resultRole.description;
+
+            const resultImage = document.getElementById('resultImage');
+            resultImage.src = resultRole.image;
+            resultImage.alt = resultRole.name + "图片";
+            
+            // 切换到结果页面
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'block';
+        }
+
+        // ================= 重新测试 =================
+        function restartTest() {
+            currentQuestion = 0;
+            scores = new Array(roles.length + 1).fill(0);
+            selectedOptions = new Array(questions.length).fill(null);
+            
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('questionContainer').style.display = 'block';
+            
+            initTest();
+        }
+
+        // ================= 页面加载时初始化 =================
+        window.onload = initTest;
+    </script>
+</body>
+</html>
